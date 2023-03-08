@@ -1,0 +1,61 @@
+---
+- name: Install nginx
+  hosts: web
+  become: true
+  
+  tasks:
+  - name: Install nginx
+    dnf:
+      name: nginx
+      state: present
+
+
+  - name: Copy cert
+    copy:
+      src: server.crt
+      dest: /etc/pki/tls/certs/server.crt
+      
+    
+  - name: Copy key
+    copy:
+      src: server.key
+      dest: /etc/pki/tls/private/server.key
+  
+
+  - name: dossier pour site
+    file:
+      path: /var/www/tp1_site
+      state: directory
+      owner: nginx
+      group: nginx
+      
+  - name: copy index
+    template:
+      src: index.html.j2
+      dest: /var/www/tp1_site/index.html
+    
+
+  - name: new nginx.conf
+    copy:
+      src: nginx.conf
+      dest: /etc/nginx/nginx.conf
+
+  - name: open 443
+    firewalld:
+      port: 443/tcp
+      permanent: yes
+      state: enabled
+  
+  - name: reload FW
+    service:
+      name: firewalld
+      state: restarted
+  - name: restart nginx
+    service: 
+      name: nginx
+      state: restarted
+      
+      
+      
+  
+      
